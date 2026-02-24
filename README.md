@@ -100,9 +100,10 @@ More info: https://github.com/apognu/tuigreet
 **Apply config:**
 ```sh
 sudo cp tuigreet/config.toml /etc/greetd/config.toml
+sudo cp tuigreet/pam.greetd /etc/pam.d/greetd
 ```
 
-> Lives in `/etc/greetd/` — requires sudo.
+> Both files live in system directories — require sudo.
 
 ---
 
