@@ -1,0 +1,44 @@
+/* Wofi Custom Style - HARD-CODED for maximum compatibility */
+
+/* Main window */
+window {
+    background-color: rgba(40, 42, 54, 0.95); /* Transparent Background */
+    border: 2px solid #57C7FF;
+    border-radius: 8px;
+    padding: 10px;
+    font-family: "JetBrainsMono Nerd Font";
+    font-size: 12pt;
+    color: #eff0eb;
+}
+
+/* Input search bar */
+#input {
+    background-color: #282a36; /* Solid Background */
+    color: #eff0eb;
+    border: 1px solid #57C7FF;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 5px;
+}
+
+/* Individual result item */
+#entry {
+    background-color: transparent;
+    color: #eff0eb;
+    padding: 10px;
+    border-radius: 8px;
+    margin: 2px 0;
+}
+
+/* Selected result item */
+#entry:selected {
+    background-color: #57C7FF; /* Blue Accent Background */
+    color: #282a36; /* Dark Text */
+}
+
+/* Other container elements */
+#inner-box { margin: 5px 0; }
+#outer-box { padding: 5px; }
+#scroll { margin-top: 5px; }
+#text { padding: 0; }
+#text:selected { color: #282a36; }

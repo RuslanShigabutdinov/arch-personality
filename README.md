@@ -1,20 +1,20 @@
 # arch-personality
 
-My personal Arch Linux setup. Configs for kitty, zsh + oh-my-zsh, and tuigreet.
+My personal Arch Linux setup — kitty, zsh + oh-my-zsh, wofi, and tuigreet.
 
 ---
 
 ## Kitty (terminal)
 
-**Install:** https://sw.kovidgoyal.net/kitty/binary/
-
-```sh
-curl -L https://sw.kovidgoyal.net/kitty/installer.sh | sh /dev/stdin
-```
-
-Or via pacman:
+**Install:**
 ```sh
 sudo pacman -S kitty
+```
+More info: https://sw.kovidgoyal.net/kitty/
+
+**Font — JetBrainsMono Nerd Font:**
+```sh
+sudo pacman -S ttf-jetbrains-mono-nerd
 ```
 
 **Apply config:**
@@ -24,10 +24,9 @@ cp kitty/kitty.conf ~/.config/kitty/kitty.conf
 cp kitty/Snazzy.conf ~/.config/kitty/Snazzy.conf
 ```
 
-Theme used: **Snazzy** — dark background (`#282a36`), vivid colors.
+Theme: **Snazzy** — dark background (`#282a36`), vivid colors.
+Colors are already embedded in `kitty.conf`. `Snazzy.conf` is kept as a standalone reference.
 Based on [hyper-snazzy](https://github.com/sindresorhus/hyper-snazzy).
-
-Font: **JetBrainsMono Nerd Font** — install from https://www.nerdfonts.com/
 
 ---
 
@@ -38,21 +37,54 @@ Font: **JetBrainsMono Nerd Font** — install from https://www.nerdfonts.com/
 sudo pacman -S zsh
 chsh -s $(which zsh)
 ```
+> Log out and back in after `chsh` — the shell change only takes effect on next login.
 
 **Install Oh My Zsh:** https://ohmyzsh.sh
 ```sh
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 ```
 
-**Apply config** (after OMZ is installed):
+**Install catimg** (required by the `catimg` OMZ plugin):
 ```sh
-cp zsh/.zshrc ~/.zshrc
-source ~/.zshrc
+sudo pacman -S catimg
 ```
 
-Theme used: **gnzh** (built into OMZ, no extra install needed).
+**Apply config** (after OMZ is installed and you've logged into zsh):
+```sh
+cp zsh/.zshrc ~/.zshrc
+exec zsh
+```
 
-Plugins enabled: `git`, `catimg`, `colored-man-pages`, `docker`, `docker-compose`, `ssh`, `sudo`
+Theme: **gnzh** (built into OMZ, no extra install needed).
+
+Plugins: `git`, `catimg`, `colored-man-pages`, `docker`, `docker-compose`, `ssh-agent`, `sudo`
+
+---
+
+## Wofi (app launcher)
+
+**Install:**
+```sh
+sudo pacman -S wofi
+```
+More info: https://hg.sr.ht/~scoopta/wofi
+
+**Apply config:**
+```sh
+mkdir -p ~/.config/wofi
+cp wofi/config ~/.config/wofi/config
+cp wofi/style.css ~/.config/wofi/style.css
+```
+
+**Install toggle script** (bind this to a key in your compositor):
+```sh
+mkdir -p ~/.local/bin
+cp wofi/toggle_wofi.sh ~/.local/bin/toggle_wofi.sh
+chmod +x ~/.local/bin/toggle_wofi.sh
+```
+
+Style: matches Kitty — Snazzy colors, JetBrainsMono Nerd Font, blue (`#57C7FF`) accent border.
+`close_on_focus_loss=false` is intentional — closing is handled by the toggle script via PID file.
 
 ---
 
@@ -63,7 +95,6 @@ Plugins enabled: `git`, `catimg`, `colored-man-pages`, `docker`, `docker-compose
 sudo pacman -S greetd tuigreet
 sudo systemctl enable greetd
 ```
-
 More info: https://github.com/apognu/tuigreet
 
 **Apply config:**
@@ -71,12 +102,13 @@ More info: https://github.com/apognu/tuigreet
 sudo cp tuigreet/config.toml /etc/greetd/config.toml
 ```
 
-> Note: greetd config lives in `/etc/greetd/` and requires sudo.
+> Lives in `/etc/greetd/` — requires sudo.
 
 ---
 
 ## Notes
 
-- NVM (Node Version Manager) is referenced in `.zshrc`. Install it from https://github.com/nvm-sh/nvm
-- Go is expected at standard GOPATH for the PATH extension in `.zshrc`
-- `gitpush` is a custom function for branch-based workflows — tweak `LEAD-OFFICE-` prefix to your project
+- **NVM** is referenced in `.zshrc`. Install: https://github.com/nvm-sh/nvm
+- **Go** PATH extension in `.zshrc` expects Go installed at standard location (`sudo pacman -S go`)
+- **`gitpush` function** creates branches named `LEAD-OFFICE-<id>` — tweak the prefix to match your project
+- **`~/.local/bin`** is already in PATH via `.zshrc`, so the wofi toggle script will be available everywhere
