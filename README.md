@@ -92,7 +92,7 @@ Style: matches Kitty — Snazzy colors, JetBrainsMono Nerd Font, blue (`#57C7FF`
 
 **Install greetd + tuigreet:**
 ```sh
-sudo pacman -S greetd tuigreet
+sudo pacman -S greetd tuigreet kwallet-pam
 sudo systemctl enable greetd
 ```
 More info: https://github.com/apognu/tuigreet
