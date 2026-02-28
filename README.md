@@ -76,12 +76,29 @@ cp wofi/config ~/.config/wofi/config
 cp wofi/style.css ~/.config/wofi/style.css
 ```
 
-**Install toggle script** (bind this to a key in your compositor):
+**Install toggle script:**
 ```sh
 mkdir -p ~/.local/bin
 cp wofi/toggle_wofi.sh ~/.local/bin/toggle_wofi.sh
 chmod +x ~/.local/bin/toggle_wofi.sh
 ```
+
+**Add `~/.local/bin` to PATH for KDE** (KDE shortcuts don't use `.zshrc` — they need this separately):
+```sh
+mkdir -p ~/.config/environment.d
+echo 'PATH="$HOME/.local/bin:$PATH"' >> ~/.config/environment.d/local_bin.conf
+```
+> Log out and back in after this step.
+
+**Add a keyboard shortcut in KDE:**
+
+Go to: **System Settings → Keyboard → Shortcuts → Add New → Command or Script**
+
+Set the command to:
+```
+toggle_wofi.sh
+```
+Then assign your preferred key combination (e.g. `Meta`).
 
 Style: matches Kitty — Snazzy colors, JetBrainsMono Nerd Font, blue (`#57C7FF`) accent border.
 `close_on_focus_loss=false` is intentional — closing is handled by the toggle script via PID file.
@@ -112,4 +129,4 @@ sudo cp tuigreet/pam.greetd /etc/pam.d/greetd
 - **NVM** is referenced in `.zshrc`. Install: https://github.com/nvm-sh/nvm
 - **Go** PATH extension in `.zshrc` expects Go installed at standard location (`sudo pacman -S go`)
 - **`gitpush` function** creates branches named `LEAD-OFFICE-<id>` — tweak the prefix to match your project
-- **`~/.local/bin`** is already in PATH via `.zshrc`, so the wofi toggle script will be available everywhere
+- **`~/.local/bin`** is in PATH via `.zshrc` (for terminals) and `~/.config/environment.d/local_bin.conf` (for KDE shortcuts)
