@@ -109,10 +109,18 @@ Style: matches Kitty — Snazzy colors, JetBrainsMono Nerd Font, blue (`#57C7FF`
 
 **Install greetd + tuigreet:**
 ```sh
-sudo pacman -S greetd tuigreet kwallet-pam
-sudo systemctl enable greetd
+sudo pacman -S greetd greetd-tuigreet kwallet-pam
 ```
 More info: https://github.com/apognu/tuigreet
+
+**Enable greetd as the display manager:**
+
+Systemd only allows one display manager at a time. This snippet auto-detects and disables the current one (if any), then enables greetd:
+```sh
+current_dm=$(readlink /etc/systemd/system/display-manager.service 2>/dev/null)
+[ -n "$current_dm" ] && sudo systemctl disable "$(basename "$current_dm" .service)"
+sudo systemctl enable greetd
+```
 
 **Apply config:**
 ```sh
