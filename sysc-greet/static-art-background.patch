@@ -1,0 +1,165 @@
+--- sysc-greet-a/cmd/sysc-greet/backgrounds.go	2026-01-18 15:36:12.000000000 +0500
++++ sysc-greet-b/cmd/sysc-greet/backgrounds.go	2026-03-13 13:29:29.120766140 +0500
+@@ -2,6 +2,8 @@
+ 
+ import (
+ 	"image/color"
++	"os"
++	"strings"
+ 
+ 	"github.com/Nomadcxx/sysc-greet/internal/animations"
+ )
+@@ -168,3 +170,68 @@
+ 	// Always return BgBase to prevent bleeding
+ 	return BgBase
+ }
++
++// addStaticArtBackground renders /usr/share/sysc-greet/static-art.txt as a full-screen
++// background, centered in the terminal. Login widget is layered on top by View().
++func (m model) addStaticArtBackground(content string, width, height int) string {
++	data, err := os.ReadFile("/usr/share/sysc-greet/static-art.txt")
++	if err != nil {
++		// File missing — return blank background so the greeter still works
++		blank := strings.Repeat(" ", width)
++		rows := make([]string, height)
++		for i := range rows {
++			rows[i] = blank
++		}
++		return strings.Join(rows, "\n")
++	}
++
++	lines := strings.Split(strings.TrimRight(string(data), "\n"), "\n")
++	artHeight := len(lines)
++
++	// Find widest line in the art
++	maxArtWidth := 0
++	for _, line := range lines {
++		if w := len([]rune(line)); w > maxArtWidth {
++			maxArtWidth = w
++		}
++	}
++
++	// Center the art block in the terminal
++	topPad := (height - artHeight) / 2
++	if topPad < 0 {
++		topPad = 0
++	}
++	leftPad := (width - maxArtWidth) / 2
++	if leftPad < 0 {
++		leftPad = 0
++	}
++
++	emptyLine := strings.Repeat(" ", width)
++	result := make([]string, height)
++	for row := 0; row < height; row++ {
++		artRow := row - topPad
++		if artRow < 0 || artRow >= artHeight {
++			result[row] = emptyLine
++			continue
++		}
++		runes := []rune(lines[artRow])
++		lineWidth := len(runes)
++		available := width - leftPad
++		if available <= 0 {
++			result[row] = emptyLine
++			continue
++		}
++		var line string
++		if leftPad > 0 {
++			line = strings.Repeat(" ", leftPad)
++		}
++		if lineWidth > available {
++			line += string(runes[:available])
++		} else {
++			line += string(runes)
++			line += strings.Repeat(" ", available-lineWidth)
++		}
++		result[row] = line
++	}
++	return strings.Join(result, "\n")
++}
+--- sysc-greet-a/cmd/sysc-greet/menu.go	2026-01-18 15:36:12.000000000 +0500
++++ sysc-greet-b/cmd/sysc-greet/menu.go	2026-03-13 13:29:29.121715368 +0500
+@@ -47,6 +47,7 @@
+ 	matrixEnabled := m.selectedBackground == "matrix"
+ 	fireworksEnabled := m.selectedBackground == "fireworks"
+ 	aquariumEnabled := m.selectedBackground == "aquarium"
++	staticArtEnabled := m.selectedBackground == "static-art"
+ 
+ 	m.menuOptions = []string{
+ 		"← Back",
+@@ -55,6 +56,7 @@
+ 		formatCheckbox("Matrix", matrixEnabled),
+ 		formatCheckbox("Fireworks", fireworksEnabled),
+ 		formatCheckbox("Aquarium", aquariumEnabled),
++		formatCheckbox("Static Art", staticArtEnabled),
+ 	}
+ 	m.mode = ModeBackgroundsSubmenu
+ 	m.menuIndex = 0
+--- sysc-greet-a/cmd/sysc-greet/main.go	2026-01-18 15:36:12.000000000 +0500
++++ sysc-greet-b/cmd/sysc-greet/main.go	2026-03-13 13:29:29.122808270 +0500
+@@ -1746,13 +1746,20 @@
+ 						m.selectedBackground = "none"
+ 						m.aquariumEffect = nil
+ 					}
++				case "Static Art":
++					m.enableFire = false
++					if m.selectedBackground != "static-art" {
++						m.selectedBackground = "static-art"
++					} else {
++						m.selectedBackground = "none"
++					}
+ 				}
+ 
+ 				// Update selectedBackground based on enabled flags
+ 				// Priority: Fire > Matrix > ASCII Rain > Fireworks > Aquarium > none
+ 				if m.enableFire {
+ 					m.selectedBackground = "fire"
+-				} else if m.selectedBackground != "pattern" && m.selectedBackground != "ascii-rain" && m.selectedBackground != "matrix" && m.selectedBackground != "fireworks" && m.selectedBackground != "aquarium" && m.selectedBackground != "ticker" {
++				} else if m.selectedBackground != "pattern" && m.selectedBackground != "ascii-rain" && m.selectedBackground != "matrix" && m.selectedBackground != "fireworks" && m.selectedBackground != "aquarium" && m.selectedBackground != "ticker" && m.selectedBackground != "static-art" {
+ 					m.selectedBackground = "none"
+ 				}
+ 				// Save background preference
+@@ -2206,6 +2213,21 @@
+ 		view.Layer = lipgloss.NewCanvas(
+ 			lipgloss.NewLayer(backgroundContent).X(0).Y(0),
+ 			lipgloss.NewLayer(content).X(uiX).Y(uiY),
++		)
++		view.BackgroundColor = BgBase
++		return view
++	} else if m.selectedBackground == "static-art" && (m.mode == ModeLogin || m.mode == ModePassword) {
++		// Render static ASCII art file as full background
++		backgroundContent := m.addStaticArtBackground("", termWidth, termHeight)
++
++		contentWidth := lipgloss.Width(content)
++		contentHeight := lipgloss.Height(content)
++		uiX := (termWidth - contentWidth) / 2
++		uiY := (termHeight - contentHeight) / 2
++
++		view.Layer = lipgloss.NewCanvas(
++			lipgloss.NewLayer(backgroundContent).X(0).Y(0),
++			lipgloss.NewLayer(content).X(uiX).Y(uiY),
+ 		)
+ 		view.BackgroundColor = BgBase
+ 		return view
+--- sysc-greet-a/cmd/sysc-greet/borders.go	2026-01-18 15:36:12.000000000 +0500
++++ sysc-greet-b/cmd/sysc-greet/borders.go	2026-03-13 13:36:14.054935227 +0500
+@@ -32,6 +32,9 @@
+ 	// Calculate inner content area
+ 	// Use reasonable max width like installer
+ 	innerWidth := min(100, termWidth-8) // Reasonable width for content area
++	if m.selectedBackground == "static-art" {
++		innerWidth = min(72, termWidth-20)
++	}
+ 	var innerSections []string
+ 
+ 	// WM/Session ASCII art - prominent display
+@@ -128,7 +131,7 @@
+ 	// Add matrix to backgrounds that remove outer border
+ 	// Add fireworks to backgrounds that remove outer border
+ 	// Add aquarium to backgrounds that remove outer border
+-	if m.selectedBackground == "fire" || m.selectedBackground == "ascii-rain" || m.selectedBackground == "matrix" || m.selectedBackground == "ticker" || m.selectedBackground == "fire+rain" || m.selectedBackground == "fireworks" || m.selectedBackground == "aquarium" {
++	if m.selectedBackground == "fire" || m.selectedBackground == "ascii-rain" || m.selectedBackground == "matrix" || m.selectedBackground == "ticker" || m.selectedBackground == "fire+rain" || m.selectedBackground == "fireworks" || m.selectedBackground == "aquarium" || m.selectedBackground == "static-art" {
+ 		helpText := m.renderMainHelp()
+ 		helpStyle := lipgloss.NewStyle().
+ 			Foreground(FgMuted).

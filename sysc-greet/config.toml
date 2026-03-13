@@ -1,0 +1,6 @@
+[terminal]
+vt = 1
+
+[default_session]
+command = "sway --unsupported-gpu -c /etc/greetd/sway-greeter-config"
+user = "greeter"

@@ -1,0 +1,30 @@
+# sysc-greet sway compositor config
+# This runs as a temporary compositor only for the login screen.
+# After login, sway exits and KDE Plasma takes over.
+
+# No window decorations
+default_border none
+default_floating_border none
+
+# No gaps
+gaps inner 0
+gaps outer 0
+
+# Input — change xkb_layout to your keyboard layout if needed
+input * {
+    xkb_layout "us"
+    repeat_delay 400
+    repeat_rate 40
+}
+
+input type:touchpad {
+    tap enabled
+}
+
+# Kitty goes fullscreen
+for_window [app_id="kitty"] fullscreen enable
+
+# Launch wallpaper daemon, then sysc-greet inside kitty
+# When sysc-greet exits (after login), kill the compositor
+exec gslapper -f -I /tmp/sysc-greet-wallpaper.sock '*' /usr/share/sysc-greet/wallpapers/sysc-greet-default.png
+exec "XDG_CACHE_HOME=/tmp/greeter-cache HOME=/var/lib/greeter kitty --start-as=fullscreen --config=/etc/greetd/kitty.conf /usr/local/bin/sysc-greet --remember-username; swaymsg exit"
