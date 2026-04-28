@@ -45,7 +45,9 @@ sudo cp sysc-greet/sway-greeter-config /etc/greetd/sway-greeter-config
 ```
 
 > `sway-greeter-config` is the same as the default but adds `--remember-username`.
-> `pam.greetd` enables KWallet auto-unlock — not installed by default.
+> `pam.greetd` enables KWallet auto-unlock and uses `force_run` because `greetd`
+> sessions may be classified as `tty`, which otherwise makes `pam_kwallet5`
+> skip startup.
 
 ---
 
@@ -71,6 +73,9 @@ It will be saved and active on every boot.
 ## KWallet auto-unlock
 
 The `pam.greetd` file handles kwallet auto-unlock via PAM.
+It includes `force_run` because on some Plasma + `greetd` setups the login
+session is reported as `Type=tty`, and without that `pam_kwallet5` logs
+`not a graphical session, skipping`.
 For it to work, **the KWallet password must match your login password**.
 
 If kwallet still doesn't auto-unlock, check:
