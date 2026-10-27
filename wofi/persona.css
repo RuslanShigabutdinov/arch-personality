@@ -1,0 +1,103 @@
+/* Wofi "Persona" theme - loud red/black/white menu with slanted shapes and hard shadows.
+ * Colors are fixed on purpose: the look depends on this exact palette.
+ * GTK3 CSS has no transforms or clip-path, so slants are drawn with angled gradients.
+ * Note: GTK3 flowbox entries never get :hover, so there is no hover style. */
+
+@define-color red   #e5191c;
+@define-color black #0b0b0b;
+@define-color white #f4f1ea;
+
+* {
+    font-family: "JetBrainsMono Nerd Font";
+    font-weight: 800;
+    font-style: italic;
+    outline: none;
+}
+
+/* Transparent surface; the visible panel is #outer-box so it can cast a shadow */
+window {
+    background-color: transparent;
+}
+
+/* Black panel with red diagonal stripes and a hard offset red shadow */
+#outer-box {
+    margin: 10px 26px 26px 10px;
+    padding: 18px 22px;
+    background-color: @black;
+    background-image: repeating-linear-gradient(-60deg,
+        alpha(@red, 0.13) 0px, alpha(@red, 0.13) 3px,
+        transparent 3px, transparent 18px);
+    border: 3px solid @white;
+    border-radius: 0;
+    box-shadow: 14px 14px 0 @red;
+}
+
+/* Search bar: white slanted slab with a red slab peeking out behind it */
+#input {
+    background-color: transparent;
+    background-image:
+        linear-gradient(100deg, transparent 2%, @white 2%, @white 97%, transparent 97%),
+        linear-gradient(100deg, transparent 3%, @red 3%, @red 98.5%, transparent 98.5%);
+    color: @black;
+    caret-color: @red;
+    font-size: 16pt;
+    letter-spacing: 2px;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 12px 34px;
+    margin-bottom: 14px;
+}
+
+#input image {
+    color: @red;
+    -gtk-icon-transform: rotate(-12deg);
+}
+
+#scroll {
+    margin-top: 2px;
+}
+
+/* Result rows */
+#entry {
+    padding: 8px 30px;
+    margin: 2px 0;
+    border-radius: 0;
+    background-color: transparent;
+    transition: background-image 100ms ease-out;
+}
+
+/* Selected row: white slanted bar on top of a red one, like the in-game menus */
+#entry:selected {
+    background-color: transparent;
+    background-image:
+        linear-gradient(100deg, transparent 1.5%, @white 1.5%, @white 94%, transparent 94%),
+        linear-gradient(100deg, transparent 2.5%, @red 2.5%, @red 97%, transparent 97%);
+    animation: persona-pop 160ms ease-out;
+}
+
+@keyframes persona-pop {
+    from { padding-left: 18px; }
+    to   { padding-left: 30px; }
+}
+
+#img {
+    margin-right: 14px;
+}
+
+#entry:selected #img {
+    -gtk-icon-transform: rotate(-10deg) scale(1.15);
+    -gtk-icon-shadow: 3px 3px 0 @red;
+}
+
+#text {
+    color: @white;
+    font-size: 12.5pt;
+    letter-spacing: 1px;
+    text-shadow: 2px 2px 0 alpha(@red, 0.55);
+}
+
+#entry:selected #text {
+    color: @black;
+    text-shadow: 2px 2px 0 alpha(@red, 0.35);
+}

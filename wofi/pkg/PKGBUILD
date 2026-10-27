@@ -1,0 +1,54 @@
+# Based on the official Arch wofi PKGBUILD (Robin Candau <antiz@archlinux.org>)
+# Modified: added hover-state patch (GtkFlowBox never sets :hover on entries, so #entry:hover in CSS did nothing)
+pkgname=wofi-hover
+_pkgname=wofi
+pkgver=1.5.3
+pkgrel=1
+pkgdesc='launcher for wlroots-based wayland compositors (patched: CSS :hover on entries)'
+arch=('x86_64')
+url='https://hg.sr.ht/~scoopta/wofi'
+license=('GPL-3.0-or-later')
+depends=(
+  'glibc'
+)
+makedepends=(
+  'cairo'
+  'gdk-pixbuf2'
+  'glib2'
+  'gtk3'
+  'meson'
+  'pango'
+  'wayland'
+)
+provides=('wofi')
+conflicts=('wofi')
+source=("${_pkgname}-v${pkgver}.tar.gz::$url/archive/v${pkgver}.tar.gz"
+        "hover-state.patch")
+sha512sums=('59067d8ea080cde13ba4c278e5843e10300c9fd5e1a1445107f6045d01c23b2ceaf59cd3e0393c3d966553b04110c3ebb776b88df39885dd06620d3e49c8ffff'
+            '2c4128f0a09313271de1c2be54e6a6dd7949b99e716f317b909f3ab968db832e97a46649e0e9803b2ded5029ace36a753ab4a0dc0101b7ee177d9cd846973678')
+
+prepare() {
+  patch -d $_pkgname-v$pkgver -p1 < hover-state.patch
+}
+
+build() {
+  arch-meson $_pkgname-v$pkgver build
+  meson compile -C build
+}
+
+check() {
+  meson test -C build --print-errorlogs
+}
+
+package() {
+  depends+=(
+    cairo libcairo.so
+    gdk-pixbuf2 libgdk_pixbuf-2.0.so
+    glib2 libgio-2.0.so libglib-2.0.so libgobject-2.0.so
+    gtk3 libgdk-3.so libgtk-3.so
+    pango libpango-1.0.so
+    wayland libwayland-client.so
+  )
+
+  meson install -C build --destdir "$pkgdir"
+}

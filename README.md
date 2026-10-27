@@ -63,17 +63,28 @@ Plugins: `git`, `catimg`, `colored-man-pages`, `docker`, `docker-compose`, `ssh-
 
 ## Wofi (app launcher)
 
-**Install:**
+**Install (patched, recommended):**
+
+Stock wofi never marks result rows as hovered (GTK3 `GtkFlowBox` has no hover state), so `#entry:hover` in CSS does nothing.
+`wofi/pkg/hover-state.patch` tracks the row under the pointer and gives it the `:hover` state. The package is `wofi-hover`; it replaces `wofi`.
 ```sh
-sudo pacman -S wofi
+mkdir -p ~/build/wofi-hover
+cp wofi/pkg/PKGBUILD wofi/pkg/hover-state.patch ~/build/wofi-hover/
+cd ~/build/wofi-hover
+makepkg -si
 ```
+> The `PKGBUILD` pins `pkgver=1.5.3` (same as Arch's official package). When Arch ships a newer wofi,
+> bump `pkgver` and the tarball checksum, and re-check that `hover-state.patch` still applies.
+
+Without the patch, plain `sudo pacman -S wofi` works too — everything except the hover highlight.
+
 More info: https://hg.sr.ht/~scoopta/wofi
 
 **Apply config:**
 ```sh
 mkdir -p ~/.config/wofi
 cp wofi/config ~/.config/wofi/config
-cp wofi/style.css ~/.config/wofi/style.css
+cp wofi/style.css wofi/persona.css ~/.config/wofi/
 ```
 
 **Install toggle script:**
@@ -100,8 +111,16 @@ toggle_wofi.sh
 ```
 Then assign your preferred key combination (e.g. `Meta`).
 
-Style: matches Kitty — Snazzy colors, JetBrainsMono Nerd Font, blue (`#57C7FF`) accent border.
-`close_on_focus_loss=false` is intentional — closing is handled by the toggle script via PID file.
+Two themes — pick one with the `stylesheet=` line in `wofi/config`:
+- `style.css` (default) — modern Spotlight-like card. Colors follow the KDE color scheme and accent color (System Settings → Colors & Themes): KDE exports the active scheme to `~/.config/gtk-3.0/colors.css` and the theme references those `@*_breeze` colors, so changing the scheme applies on the next wofi launch.
+- `persona.css` — loud Persona-style menu: black panel with red stripes, slanted white/red bars, hard shadows, bold italic JetBrainsMono. Fixed red/black/white palette.
+
+Copy both CSS files to `~/.config/wofi/` so switching is a one-line config change.
+Hover highlight on result rows needs the patched `wofi-hover` package (see Install). The selected row has a slow light sweep (`shimmer` animation in `style.css`).
+Closing: the toggle script (`pkill -x wofi || exec wofi`) opens on one press and closes on the next; `Escape` or clicking outside wofi (`close_on_focus_loss=true`) closes it too.
+
+Search: `multi-contains` matching — space-separated words must all appear (`fire priv` → Firefox Private); app descriptions and categories are searched too (`browser` → Firefox).
+Window shrinks to fit the results (`dynamic_lines`). Navigate with arrows or `Ctrl-j` / `Ctrl-k`.
 
 ---
 
